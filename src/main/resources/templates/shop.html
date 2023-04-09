@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Home Midterm</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css    ">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+        integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <style>
+    select {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="/">Spring Commerce</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ml-auto mr-5">
+      <li class="nav-item active m-2">
+        <a class="nav-link" href="/">Home</a>
+      </li>
+      <li class="nav-item m-2">
+        <a class="nav-link" href="/shop">Shop</a>
+      </li>
+      <li class="nav-item m-2">
+        <a class="nav-link" href="/cart">Cart</a>
+      </li>
+      <li class="nav-item m-2">
+        <a class="nav-link" href="#">Order History</a>
+      </li>
+      <li class="nav-item m-2">
+        <a class="nav-link" th:href="'/login'">Sign in</a>
+      </li>
+      <li class="nav-item m-2">
+        <div class="dropdown mt-2">
+          Xin chào <a class="dropdown-toggle text-primary" data-toggle="dropdown" th:if="${session.containsKey('user') == true}" th:text="${session.user}"></a>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" onclick="logOut()">
+              <i class="fas fa-sign-out-alt"></i>
+              &nbsp;&nbsp; Đăng xuất
+            </a>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div style="display: flex; flex-direction: column;height: calc(100vh - 72px);">
+  <div class="container" style="flex: 1">
+    <!-- Product cards -->
+    <div class="container">
+      <div class="row col-12 my-3">
+        <div class="input-group col-4">
+          <div class="input-group-prepend">
+        <span class="input-group-text">
+            <span class="fa fa-search"></span>
+        </span>
+          </div>
+          <input id="charSearch" type="text" class="form-control" placeholder="Search">
+          <input hidden type="text" id="rs">
+        </div>
+        <div class="col-2">
+          <select name="color" id="color">
+            <option value="">--Color--</option>
+            <option value="red">Red</option>
+            <option value="green">Green</option>
+            <option value="pink">Pink</option>
+          </select>
+        </div>
+        <div class="col-2">
+          <select name="category" id="category">
+            <option value="">--Category--</option>
+            <option value="computer">Computer</option>
+            <option value="peripherals">Peripherals</option>
+            <option value="household">Household</option>
+            <option value="cloth">Cloth</option>
+          </select>
+        </div>
+        <div class="col-2">
+          <select name="brand" id="brand">
+            <option value="">--Brand--</option>
+            <option value="tiki">Tiki</option>
+            <option value="lazada">Lazada</option>
+            <option value="shoppe">Shoppe</option>
+            <option value="amazon">Amazon</option>
+          </select>
+        </div>
+        <div class="col-2">
+          <select name="price" id="price">
+            <option value="">-- Price --</option>
+            <option value="10">< $10</option>
+            <option value="1050">$10 - $50</option>
+            <option value="50100">$50 - $100</option>
+            <option value="100">> $100</option>
+          </select>
+        </div>
+      </div>
+      <div class="row mt-3" id="display-item">
+        <div class="col-sm-3" th:each="product: ${products}">
+          <div class="card mt-3">
+            <img src="images/p.jpg" class="card-img-top" alt="...">
+            <div class="card-body">
+              <h5 class="card-title" th:text="${product.name}"></h5>
+              <p class="card-text" th:text="${'$' + product.price}"></p>
+              <a class="btn btn-primary add-to-cart-btn" th:data-id="${product.id}" th:data-user="${session.user}">Add to cart</a>
+              <a th:href="${'/detail?id=' + product.id}" class="btn btn-primary detail-btn" th:data-id="${product.id}">See detail</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Footer -->
+  <div>
+    <footer class="footer bg-dark mt-3 p-4" style="bottom: 0;">
+      <div class="container">
+        <span class="text-muted text-light">&copy; Spring Commerce. Ngan Tram</span>
+      </div>
+    </footer>
+  </div>
+</div>
+<script>
+  $(document).ready(function() {
+    fetch('/json-products')
+            .then(d => d.json())
+            .then(j => {
+              $('#rs').val(JSON.stringify(j))
+              console.log(JSON.parse($('#rs').val()))
+            })
+  });
+  function logOut() {
+    $.ajax({
+      type: "POST",
+      url: "/logout"
+    })
+    location.reload()
+  }
+
+  $('.detail-btn').click(e => {
+    let id = e.target.dataset.id
+    console.log(id)
+  })
+
+  $('.add-to-cart-btn').click(e => {
+    $.ajax({
+      url: "/add-cart",
+      type: "POST",
+      data: {
+        user: e.target.dataset.user,
+        product_id: e.target.dataset.id
+      },
+      success: d => {
+        if(d === 'success') {
+          alert('Thêm vào giỏ hàng thành công!')
+        }
+      },
+      error: e => {
+        console.log('e:',e)
+      }
+    })
+  })
+
+  $("#charSearch").on('input', function(e) {
+    let char = $("#charSearch").val();
+    let data = JSON.parse($('#rs').val())
+    data = data.filter(el => el.name.toLowerCase().includes(char.toLowerCase()))
+    console.log(data);
+    let html_result = "";
+    if(data.length > 0) {
+      let ht = ''
+      data.forEach(item => {
+        ht += `
+        <div class="col-sm-3">
+        <div class="card mt-3">
+          <img src="images/p.jpg" class="card-img-top" alt="...">
+          <div class="card-body">
+            <h5 class="card-title">${item.name}</h5>
+            <p class="card-text">$${item.price}</p>
+            <a class="btn btn-primary add-to-cart-btn" data-id="${item.id}">Add to cart</a>
+            <a href="'/detail?id=${item.id}" class="btn btn-primary detail-btn" data-id="${item.id}">See detail</a>
+          </div>
+        </div>
+        </div>
+        `
+      })
+      html_result += ht
+      // console.log(html_result);
+    }
+    if(html_result === '') {
+      html_result = `
+        <div class="col-12 text-center py-3 mt-5 bg-secondary text-light" style="border-radius: 16px;">Không tìm thấy sản phẩm nào</div>
+      `
+    }
+    $("#display-item").html(html_result)
+  })
+</script>
+</body>
+</html>

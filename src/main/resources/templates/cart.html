@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giỏ hàng</title>
+  <!-- Thêm CSS Bootstrap -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css    ">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <style>
+    .stepper {
+      display: flex;
+      border: 1px solid black;
+      width: fit-content;
+    }
+    .stepper button {
+      outline: none;
+      border: none;
+      background-color: #999999;
+    }
+
+    .stepper button:hover {
+      background-color: #d7d5d5;
+      cursor: pointer;
+    }
+    .stepper-number {
+      width: 35px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="/">Spring Commerce</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ml-auto mr-5">
+      <li class="nav-item active m-2">
+        <a class="nav-link" href="/">Home</a>
+      </li>
+      <li class="nav-item m-2">
+        <a class="nav-link" href="/shop">Shop</a>
+      </li>
+      <li class="nav-item m-2">
+        <a class="nav-link" href="/cart">Cart</a>
+      </li>
+      <li class="nav-item m-2" th:if="${session.containsKey('user') == true}">
+        <a class="nav-link" href="#">Order History</a>
+      </li>
+      <li class="nav-item m-2">
+        <a class="nav-link" th:href="'/login'">Sign in</a>
+      </li>
+      <li class="nav-item m-2">
+        <div class="dropdown mt-2">
+          Xin chào <a class="dropdown-toggle text-primary" data-toggle="dropdown" th:if="${session.containsKey('user') == true}" th:text="${session.user}"></a>
+          <div class="dropdown-menu" th:if="${session.containsKey('user') == true}">
+            <a class="dropdown-item" onclick="logOut()">
+              <i class="fas fa-sign-out-alt"></i>
+              &nbsp;&nbsp; Đăng xuất
+            </a>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>
+<div class="container mt-5">
+  <h1 class="mb-4">Giỏ hàng</h1>
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th scope="col">Ảnh</th>
+      <th scope="col">Tên sản phẩm</th>
+      <th scope="col">Số lượng</th>
+      <th scope="col">Đơn giá</th>
+      <th scope="col">Thành tiền</th>
+      <th scope="col"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="cart : ${carts}" th:id="${cart.id}">
+      <td><img src="images/p.jpg" height="50px" width="50px" /></td>
+      <td th:text="${cart.product_name}"></td>
+      <td>
+        <div class="stepper">
+          <button class="stepper-minus">-</button>
+          <span class="stepper-number bg-info" th:text="${cart.quantity}"></span>
+          <button class="stepper-plus">+</button>
+        </div>
+      </td>
+      <td class="single" th:text="${cart.product_price}"></td>
+      <th:block th:with="var = ${cart.product_price}*${cart.quantity}">
+        <td class="each-price" th:text="${var}"></td>
+      </th:block>
+      <td>
+        <th:block th:with="var = ${cart.product_price}*${cart.quantity}">
+          <input th:data-id="${cart.id}" th:data-name="${cart.product_name}" th:data-price="${var}" class="check-choose" type="checkbox" style="scale: 1.5;margin-right: 12px;">
+        </th:block>
+        <button th:data-id="${cart.id}" type="button" class="btn btn-danger delete-cart-btn">Xóa</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <div class="d-flex justify-content-end">
+    <h4>Tổng cộng: $<span id="total"></span></h4>
+  </div>
+  <div class="d-flex justify-content-end mt-3">
+    <button type="button" class="btn btn-success mr-2" id="confirm-book" th:data-user="${session.user}">Thanh toán</button>
+    <button type="button" class="btn btn-secondary" onclick="contBuy()">Tiếp tục mua hàng</button>
+  </div>
+</div>
+</body>
+</html>
+
+<script>
+  $('#total').text(0)
+  $('.check-choose').change(function(e) {
+    let a = parseInt($('#total').text())
+    let b = parseInt($(e.target).closest('td').siblings('.each-price').text())
+    if(this.checked) {
+      $('#total').text(a+b)
+    } else {
+      $('#total').text(a-b)
+    }
+  });
+
+  $('button.stepper-plus').click(e => {
+    let span = $(e.target).closest('div').find('span.stepper-number')
+    let value = parseInt(span.text())
+    if(value < 100) {
+      value += 1
+    }
+    span.text(value)
+    let price = $(e.target).closest('td').siblings('.each-price')
+    let single = $(e.target).closest('td').siblings('.single')
+    let single_price = parseInt(single.text())
+    // console.log(price)
+    // console.log(single)
+    // console.log(single_price)
+
+    price.text(value * single_price)
+  })
+  $('button.stepper-minus').click(e => {
+    let span = $(e.target).closest('div').find('span.stepper-number')
+    let value = parseInt(span.text())
+    if(value > 1) {
+      value -= 1
+    }
+    span.text(value)
+    let price = $(e.target).closest('td').siblings('.each-price')
+    let single = $(e.target).closest('td').siblings('.single')
+    let single_price = parseInt(single.text())
+
+    price.text(value * single_price)
+  })
+
+  function logOut() {
+    $.ajax({
+      type: "POST",
+      url: "/logout"
+    })
+    location.reload()
+  }
+
+  function contBuy() {
+    location.href = '/shop'
+  }
+
+  $('tbody .delete-cart-btn').click(e => {
+    let flag = confirm("Bạn có chắc chắn muốn xóa sản phẩm này ra khỏi giỏ hàng?");
+    console.log(flag)
+    if(flag) {
+      let id = e.target.dataset.id
+      $.ajax({
+        url: '/delete-cart',
+        type: 'POST',
+        data: {
+          id: id
+        },
+        success: d => {
+          if(d === 'success') {
+            alert('Đã xóa thành công!')
+          }
+          $(`tr#${id}`).remove()
+        },
+        error: e => {
+          console.log(e)
+        }
+      })
+    }
+  })
+
+  function divide(a, b) {
+    return a/b
+  }
+
+  $('#confirm-book').click(e => {
+    let item_book = $('.check-choose')
+    // console.log(item_book)
+    let a = []
+    for (let i = 0; i < item_book.length; i++) {
+      if(item_book[i].checked) {
+        a.push(item_book[i])
+      }
+    }
+
+    if(a.length == 0) {
+      alert('Vui lòng chọn sản phẩm để thực hiện thanh toán!')
+    } else {
+      let str = ''
+      let total = 0
+      let aId = []
+      let num_aId = []
+      for (let i = 0; i < a.length; i++) {
+        let item = a[i].dataset
+        let single = parseInt($(a[i]).closest('td').siblings('.single').text())
+        let each = parseInt($(a[i]).closest('td').siblings('.each-price').text())
+        aId.push(item.id)
+        num_aId.push(divide(each, single))
+        console.log(single, each)
+        total += each
+        str += `${i+1}. ${divide(each, single)} sản phẩm ${item.name} có đơn giá là $${item.price}, thành tiền là $${each}\n`
+      }
+      str += `Tổng giá trị đơn hàng là ${total}\n`
+      console.log(total)
+      console.log(JSON.stringify(aId))
+      console.log(JSON.stringify(num_aId))
+      let check = confirm(`Đơn hàng của bạn bao gồm các sản phẩm:\n${str}\nBạn có chắc chắn muốn thanh toán không?`)
+      if(check) {
+        //   api
+        $.ajax({
+          url: "/add-order",
+          type: "POST",
+          data: {
+            user: e.target.dataset.user,
+            pid: JSON.stringify(aId),
+            num_pid: JSON.stringify(num_aId)
+          },
+          success: d => {
+            if(d === 'success') {
+              location.href = '/order-history'
+            }
+          },
+          error: e => {
+            console.log('e:',e)
+          }
+        })
+      }
+    }
+  })
+</script>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css    ">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <style>
+    .product-image-large {
+      width: 100%;
+      height: 400px;
+      object-fit: cover;
+      margin-bottom: 20px;
+    }
+
+    .product-image-small {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .product-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .product-price {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background-color: #4CAF50; /* Màu nền */
+      border: none; /* Loại bỏ đường viền */
+      color: white; /* Màu chữ */
+      padding: 10px; /* Khoảng cách giữa nội dung và đường viền */
+      text-align: center; /* Canh giữa nội dung */
+      text-decoration: none; /* Bỏ gạch chân */
+      display: inline-block; /* Hiển thị button theo kiểu khối */
+      font-size: 16px; /* Cỡ chữ */
+    }
+
+    input[type="text"] {
+      width: 50px; /* Chiều rộng của ô input */
+      height: 30px; /* Chiều cao của ô input */
+      text-align: center; /* Canh giữa nội dung */
+      font-size: 16px; /* Cỡ chữ */
+      border: 1px solid #ccc; /* Đường viền ô input */
+      border-radius: 4px; /* Bo góc ô input */
+      margin: 0 10px; /* Khoảng cách giữa ô input và button */
+    }
+    .product-description {
+      font-size: 16px;
+      line-height: 1.5;
+      margin: 20px 0;
+    }
+
+
+
+    .quantity input {
+      width: 50px;
+      height: 30px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    .add-to-cart-btn,
+    .buy-now-btn {
+      display: inline-block;
+      background-color: #007bff;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin-right: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .add-to-cart-btn:hover,
+    .buy-now-btn:hover {
+      background-color: #0062cc;
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+  <a class="navbar-brand" href="/">Spring Commerce</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ml-auto mr-5">
+      <li class="nav-item active m-2">
+        <a class="nav-link" href="/">Home</a>
+      </li>
+      <li class="nav-item m-2">
+        <a class="nav-link" href="/shop">Shop</a>
+      </li>
+      <li class="nav-item m-2">
+        <a class="nav-link" href="/cart">Cart</a>
+      </li>
+      <li class="nav-item m-2">
+        <a class="nav-link" href="#">Order History</a>
+      </li>
+      <li class="nav-item m-2">
+        <div class="dropdown mt-2">
+          Xin chào  <a class="dropdown-toggle text-primary" data-toggle="dropdown" th:if="${session.containsKey('user')}" th:text="${session.user}"></a>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" onclick="logOut()">
+              <i class="fas fa-sign-out-alt"></i>
+              &nbsp;&nbsp; Đăng xuất
+            </a>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-6">
+      <img src="images/ao1.jpg" alt="Product Image Large" class="product-image-large">
+      <div class="d-flex flex-row justify-content-start">
+        <img src="images/ao2.jpg" alt="Product Image Small" class="product-image-small">
+        <img src="images/ao3.jpg" alt="Product Image Small" class="product-image-small">
+        <img src="images/ao4.jpg" alt="Product Image Small" class="product-image-small">
+        <img src="images/ao1.jpg" alt="Product Image Small" class="product-image-small">
+      </div>
+    </div>
+    <div class="col-md-6">
+      <h1 class="product-title" th:text="${detail_product.name}"></h1>
+      <h2 class="product-price" th:text="${'$' + detail_product.price}"></h2>
+      <div class="btn-group btn-group-toggle" data-toggle="buttons">
+        <label class="btn btn-outline-primary active">
+          <input type="radio" name="size" id="sizeS" autocomplete="off" checked> S
+        </label>
+        <label class="btn btn-outline-primary">
+          <input type="radio" name="size" id="sizeM" autocomplete="off"> M
+        </label>
+        <label class="btn btn-outline-primary">
+          <input type="radio" name="size" id="sizeL" autocomplete="off"> L
+        </label>
+      </div>
+      <p class="product-description" th:text="${'Hàng còn trong kho: '+ detail_product.store}"></p>
+
+      <div class="quantity">
+        <button id="decrease-btn">-</button>
+        <input type="text" id="quantity-input" value="0">
+        <button id="increase-btn">+</button>
+      </div>
+
+      <div style="margin-top: 28px;">
+        <button class="add-to-cart-btn" th:data-id="${detail_product.id}" th:data-user="${session.user}">Add to cart</button>
+        <button class="buy-now-btn">Buy now</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- Footer -->
+<footer class="footer bg-dark mt-3 p-4 fixed-bottom">
+  <div class="container">
+    <span class="text-muted text-light">&copy; Spring Commerce. Ngan Tram</span>
+  </div>
+</footer>
+<script>
+  function logOut() {
+    $.ajax({
+      type: "POST",
+      url: "/logout"
+    })
+    location.reload()
+  }
+
+  $('.add-to-cart-btn').click(e => {
+    $.ajax({
+      url: "/add-cart",
+      type: "POST",
+      data: {
+        user: e.target.dataset.user,
+        product_id: e.target.dataset.id
+      },
+      success: d => {
+        if(d === 'success') {
+          alert('Thêm vào giỏ hàng thành công!')
+        }
+      },
+      error: e => {
+        console.log('e:',e)
+      }
+    })
+  })
+
+  const decreaseBtn = document.getElementById("decrease-btn");
+  const increaseBtn = document.getElementById("increase-btn");
+  const quantityInput = document.getElementById("quantity-input");
+
+  decreaseBtn.addEventListener("click", () => {
+    if (quantityInput.value > 0) {
+      quantityInput.value--;
+    }
+  });
+
+  increaseBtn.addEventListener("click", () => {
+    quantityInput.value++;
+  });
+
+  const largeImage = document.querySelector('.product-image-large');
+  const smallImages = document.querySelectorAll('.product-image-small');
+
+  smallImages.forEach(smallImage => {
+    smallImage.addEventListener('click', () => {
+      const newLargeImageSrc = smallImage.src; // Lấy src của ảnh được click
+      largeImage.src = newLargeImageSrc; // Cập nhật src của ảnh lớn
+    });
+  });
+
+
+</script>
+</body>
+</html>
